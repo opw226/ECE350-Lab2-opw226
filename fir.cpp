@@ -1,7 +1,7 @@
 #include <ap_int.h>
 
-typedef ap_int<16> data_t;   // 16-bit signed input/output
-typedef ap_int<32> acc_t;    // wider accumulator
+typedef ap_int<16> data_t;  
+typedef ap_int<32> acc_t;   
 
 const int N_TAPS = 16;
 const int N_SAMPLES = 256;
@@ -21,20 +21,17 @@ void fir(const data_t x[N_SAMPLES], data_t y[N_SAMPLES]) {
 
 main_loop:
     for (int n = 0; n < N_SAMPLES; n++) {
-#pragma HLS PIPELINE II=1   // you can remove or change this later for optimization experiments
-        // shift register
+#pragma HLS PIPELINE II=1
         for (int t = N_TAPS - 1; t > 0; t--) {
             shift_reg[t] = shift_reg[t - 1];
         }
         shift_reg[0] = x[n];
 
-        // multiply-accumulate
         acc_t acc = 0;
         for (int t = 0; t < N_TAPS; t++) {
             acc += (acc_t)shift_reg[t] * (acc_t)COEFFS[t];
         }
 
-        // truncate back to 16-bit output
         y[n] = (data_t)acc;
     }
 }
